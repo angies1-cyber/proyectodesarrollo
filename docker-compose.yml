@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - DB_URL=${DB_URL:-jdbc:sqlserver://host.docker.internal:1435;databaseName=proyecto_clientes;encrypt=true;trustServerCertificate=true}
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-Guate2026++}
+
+  backend-api:
+    build: ./apirest-demo
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - DB_URL=${DB_URL:-jdbc:sqlserver://host.docker.internal:1435;databaseName=proyecto_clientes;encrypt=true;trustServerCertificate=true}
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-Guate2026++}
+
+  clinica-frontend:
+    build: ./clinica-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - auth-service
+      - backend-api
+

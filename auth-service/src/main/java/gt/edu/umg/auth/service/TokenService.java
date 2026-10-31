@@ -1,7 +1,7 @@
 package gt.edu.umg.auth.service;
 
 import gt.edu.umg.auth.entity.Usuario;
-import org.springframework.security.core.GrantedAuthority;
+import gt.edu.umg.auth.dto.ModuloAccesoDto;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -20,18 +20,18 @@ public class TokenService {
         this.encoder = encoder;
     }
 
-    public String generateToken(Usuario usuario) {
+    public String generateToken(Usuario usuario, List<ModuloAccesoDto> modulos) {
         Instant now = Instant.now();
 
         List<String> roles = usuario.getRoles().stream()
                 .map(r -> r.getNombre())
                 .toList();
 
-        List<String> permisos = usuario.getRoles().stream()
-                .flatMap(r -> r.getPermisos().stream())
-                .map(p -> p.getNombre())
+        List<String> authorities = modulos.stream()
+                .flatMap(m -> m.permisos().stream().map(p -> m.codigo() + ":" + p))
                 .distinct()
                 .toList();
+        boolean superAdmin = roles.contains(AuthorizationService.SUPER_ADMIN_ROLE);
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("auth-service")
@@ -41,9 +41,14 @@ public class TokenService {
                 .claim("userId", usuario.getId())
                 .claim("email", usuario.getEmail())
                 .claim("roles", roles)
-                .claim("permisos", permisos)
+                .claim("authorities", authorities)
+                .claim("superAdmin", superAdmin)
                 .build();
 
         return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
+    public String generateToken(Usuario usuario) {
+        return generateToken(usuario, List.of());
     }
 }

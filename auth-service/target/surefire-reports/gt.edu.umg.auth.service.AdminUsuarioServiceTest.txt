@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: gt.edu.umg.auth.service.AdminUsuarioServiceTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.735 s -- in gt.edu.umg.auth.service.AdminUsuarioServiceTest

@@ -36,7 +36,8 @@ public class Usuario {
     @JoinTable(
             name = "usuario_roles",
             joinColumns = @JoinColumn(name = "usuario_id"),
-            inverseJoinColumns = @JoinColumn(name = "rol_id")
+            inverseJoinColumns = @JoinColumn(name = "rol_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"usuario_id", "rol_id"})
     )
     @Builder.Default
     private Set<Rol> roles = new HashSet<>();

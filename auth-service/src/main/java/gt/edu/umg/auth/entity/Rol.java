@@ -3,11 +3,8 @@ package gt.edu.umg.auth.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
-@Table(name = "roles")
+@Table(name = "roles", uniqueConstraints = @UniqueConstraint(columnNames = {"nombre", "sistema_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,15 +16,17 @@ public class Rol {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String nombre;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "rol_permisos",
-            joinColumns = @JoinColumn(name = "rol_id"),
-            inverseJoinColumns = @JoinColumn(name = "permiso_id")
-    )
+    @Column(length = 150)
+    private String descripcion;
+
+    @Column(nullable = false)
     @Builder.Default
-    private Set<Permiso> permisos = new HashSet<>();
+    private Boolean activo = true;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "sistema_id", nullable = false)
+    private Sistema sistema;
 }
