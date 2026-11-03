@@ -33,11 +33,6 @@ import { AuthService } from '../../core/services/auth.service';
           </button>
         </form>
 
-        <div class="login-demo">
-          <strong>Credenciales de prueba</strong>
-          <span>Admin: admin / admin123</span>
-          <span>Operador: usuario / user123</span>
-        </div>
       </section>
     </main>
   `

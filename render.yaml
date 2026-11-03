@@ -1,0 +1,107 @@
+services:
+  - type: web
+    name: clinica-auth
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./auth-service/Dockerfile
+    dockerContext: ./auth-service
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: clinica-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: clinica-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: clinica-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: clinica-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: clinica-db
+          property: password
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CLINICA_FRONTEND_URL
+        sync: false
+      - key: RSA_PRIVATE_KEY_BASE64
+        sync: false
+      - key: RSA_PUBLIC_KEY_BASE64
+        sync: false
+      - key: INITIAL_ADMIN_USERNAME
+        sync: false
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+
+  - type: web
+    name: clinica-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./apirest-demo/Dockerfile
+    dockerContext: ./apirest-demo
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: clinica-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: clinica-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: clinica-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: clinica-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: clinica-db
+          property: password
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: RSA_PUBLIC_KEY_BASE64
+        sync: false
+
+  - type: web
+    name: clinica-frontend
+    runtime: static
+    rootDir: clinica-frontend
+    buildCommand: npm ci && npm run build:render
+    staticPublishPath: ./dist/clinica-frontend/browser
+    envVars:
+      - key: AUTH_API_BASE_URL
+        sync: false
+      - key: CLINIC_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: clinica-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: '16'
+    databaseName: clinica
+    user: clinica
+    ipAllowList: []

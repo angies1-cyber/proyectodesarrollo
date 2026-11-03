@@ -1,0 +1,15 @@
+FROM eclipse-temurin:21-jdk-alpine AS build
+WORKDIR /workspace
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+COPY src src
+RUN ./mvnw clean package -DskipTests -B
+
+FROM eclipse-temurin:21-jre-alpine
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+WORKDIR /app
+COPY --from=build /workspace/target/api-demo-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8082
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

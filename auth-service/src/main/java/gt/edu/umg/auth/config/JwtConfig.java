@@ -34,32 +34,34 @@ public class JwtConfig {
     @Value("${rsa.public-key}")
     private Resource publicKeyResource;
 
+    @Value("${rsa.private-key-base64:}")
+    private String privateKeyBase64;
+
+    @Value("${rsa.public-key-base64:}")
+    private String publicKeyBase64;
+
     @Bean
     public RSAPublicKey rsaPublicKey() throws Exception {
-        try (InputStream is = publicKeyResource.getInputStream()) {
-            String keyStr = new String(is.readAllBytes(), StandardCharsets.UTF_8)
+        String keyStr = readKey(publicKeyResource, publicKeyBase64)
                     .replace("-----BEGIN PUBLIC KEY-----", "")
                     .replace("-----END PUBLIC KEY-----", "")
                     .replaceAll("\\s+", "");
-            byte[] decode = Base64.getDecoder().decode(keyStr);
-            X509EncodedKeySpec spec = new X509EncodedKeySpec(decode);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return (RSAPublicKey) kf.generatePublic(spec);
-        }
+        byte[] decode = Base64.getDecoder().decode(keyStr);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(decode);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return (RSAPublicKey) kf.generatePublic(spec);
     }
 
     @Bean
     public RSAPrivateKey rsaPrivateKey() throws Exception {
-        try (InputStream is = privateKeyResource.getInputStream()) {
-            String keyStr = new String(is.readAllBytes(), StandardCharsets.UTF_8)
+        String keyStr = readKey(privateKeyResource, privateKeyBase64)
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s+", "");
-            byte[] decode = Base64.getDecoder().decode(keyStr);
-            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decode);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return (RSAPrivateKey) kf.generatePrivate(spec);
-        }
+        byte[] decode = Base64.getDecoder().decode(keyStr);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decode);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return (RSAPrivateKey) kf.generatePrivate(spec);
     }
 
     @Bean
@@ -77,5 +79,14 @@ public class JwtConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    private String readKey(Resource resource, String encodedKey) throws Exception {
+        if (encodedKey != null && !encodedKey.isBlank()) {
+            return new String(Base64.getDecoder().decode(encodedKey), StandardCharsets.UTF_8);
+        }
+        try (InputStream is = resource.getInputStream()) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }

@@ -44,13 +44,10 @@ Abre `http://localhost:4200`.
 
 También puedes construir los servicios con `docker compose up --build`.
 
-## Usuarios iniciales
+## Usuario inicial
 
-| Usuario | Contraseña | Rol |
-|---|---|---|
-| `superadmin` | `superadmin123` | `ROLE_SUPER_ADMIN` |
-| `admin` | `admin123` | `ROLE_ADMIN` |
-| `usuario` | `user123` | `ROLE_USER` |
+La cuenta de superadministración se crea únicamente cuando se configuran
+`INITIAL_ADMIN_USERNAME`, `INITIAL_ADMIN_EMAIL` e `INITIAL_ADMIN_PASSWORD`.
 
 
 ## Seguridad

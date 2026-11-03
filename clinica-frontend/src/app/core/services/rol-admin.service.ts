@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CatalogoSeguridad, RolAdmin } from '../models/usuario-admin.model';
+import { environment } from '../../../environments/environment';
 
 export interface GuardarRolRequest {
   nombre: string;
@@ -13,7 +14,7 @@ export interface GuardarRolRequest {
 
 @Injectable({ providedIn: 'root' })
 export class RolAdminService {
-  private readonly apiUrl = 'http://localhost:8081/api/v1/admin/roles';
+  private readonly apiUrl = `${environment.authApiBaseUrl}/api/v1/admin/roles`;
   constructor(private http: HttpClient) {}
   listar(): Observable<RolAdmin[]> { return this.http.get<RolAdmin[]>(this.apiUrl); }
   catalogo(): Observable<CatalogoSeguridad> { return this.http.get<CatalogoSeguridad>(`${this.apiUrl}/catalogo`); }

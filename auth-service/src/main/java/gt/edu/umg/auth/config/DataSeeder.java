@@ -3,6 +3,7 @@ package gt.edu.umg.auth.config;
 import gt.edu.umg.auth.entity.*;
 import gt.edu.umg.auth.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,18 @@ public class DataSeeder implements CommandLineRunner {
     private final RolModuloRepository rolModuloRepository;
     private final RolModuloPermisoRepository rolModuloPermisoRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
+    @Value("${app.initial-admin.username:}")
+    private String initialAdminUsername;
+
+    @Value("${app.initial-admin.email:}")
+    private String initialAdminEmail;
+
+    @Value("${app.initial-admin.password:}")
+    private String initialAdminPassword;
 
     public DataSeeder(UsuarioRepository usuarioRepository, RolRepository rolRepository,
                       PermisoRepository permisoRepository, SistemaRepository sistemaRepository,
@@ -39,7 +52,7 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) {
         Sistema sistema = sistemaRepository.findByCodigo("CLINICA").orElseGet(() -> sistemaRepository.save(
                 Sistema.builder().codigo("CLINICA").nombre("Sistema de Gestión Clínica")
-                        .dominio("http://localhost:4200").activo(true).build()));
+                        .dominio(frontendUrl).activo(true).build()));
 
         Map<String, Permiso> permisos = new LinkedHashMap<>();
         permisos.put("READ", permiso("READ", "Consultar información"));
@@ -72,9 +85,9 @@ public class DataSeeder implements CommandLineRunner {
         asignar(user, modulos.get("ESPECIALIDADES"), List.of(permisos.get("READ")));
         asignar(user, modulos.get("CITAS"), List.of(permisos.get("READ"), permisos.get("CREATE"), permisos.get("UPDATE")));
 
-        usuario("superadmin", "superadmin123", "superadmin@clinica.com", superAdmin);
-        usuario("admin", "admin123", "admin@clinica.com", admin);
-        usuario("usuario", "user123", "user@clinica.com", user);
+        if (!initialAdminUsername.isBlank() && !initialAdminEmail.isBlank() && !initialAdminPassword.isBlank()) {
+            usuario(initialAdminUsername, initialAdminPassword, initialAdminEmail, superAdmin);
+        }
     }
 
     private Permiso permiso(String nombre, String descripcion) {

@@ -1,9 +1,13 @@
-FROM node:22-alpine as build
+FROM node:22-alpine AS build
 WORKDIR /app
+ARG AUTH_API_BASE_URL=http://localhost:8081
+ARG CLINIC_API_BASE_URL=http://localhost:8082
+ENV AUTH_API_BASE_URL=$AUTH_API_BASE_URL
+ENV CLINIC_API_BASE_URL=$CLINIC_API_BASE_URL
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
-RUN npx ng build --configuration production
+RUN npm run build:render
 
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf

@@ -2,12 +2,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Cita, PageResponse } from '../models/clinica.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CitaService {
-  private apiUrl = 'http://localhost:8082/api/v1/citas';
+  private apiUrl = `${environment.clinicApiBaseUrl}/api/v1/citas`;
 
   constructor(private http: HttpClient) {}
 

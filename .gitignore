@@ -3,7 +3,14 @@
 .env.local
 .env.*.local
 *.secret
+*.pem
 *.pem.key
+
+# Build artifacts and dependencies
+**/target/
+**/node_modules/
+**/dist/
+.angular/
 
 # Logs
 *.log

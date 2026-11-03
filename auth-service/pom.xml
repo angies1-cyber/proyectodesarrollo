@@ -48,18 +48,23 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- SQL Server JDBC Driver -->
+        <!-- PostgreSQL JDBC Driver -->
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 Database -->
+        <!-- Database migrations -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <!-- Health checks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- Spring Security OAuth2 Resource Server / Jose para manejo de JWT RSA -->

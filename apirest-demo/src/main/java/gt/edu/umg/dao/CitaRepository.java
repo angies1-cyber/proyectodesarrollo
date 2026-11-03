@@ -1,0 +1,10 @@
+package gt.edu.umg.dao;
+
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+
+import gt.edu.umg.core.entities.Cita;
+
+@Repository
+public interface CitaRepository extends IGenericRepository<Cita, Long>, JpaSpecificationExecutor<Cita> {
+}
