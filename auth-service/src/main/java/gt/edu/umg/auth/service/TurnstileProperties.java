@@ -33,7 +33,15 @@ public class TurnstileProperties {
     }
 
     public void setAllowedHostnames(List<String> allowedHostnames) {
-        this.allowedHostnames = allowedHostnames;
+        if (allowedHostnames == null) {
+            this.allowedHostnames = new ArrayList<>();
+            return;
+        }
+        this.allowedHostnames = allowedHostnames.stream()
+                .flatMap(h -> java.util.Arrays.stream(h.split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 
     public boolean isRequireHostname() {

@@ -1,6 +1,8 @@
 package gt.edu.umg.auth.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Service
 public class TurnstileValidationService {
+    private static final Logger log = LoggerFactory.getLogger(TurnstileValidationService.class);
     private final RestClient restClient;
     private final TurnstileProperties properties;
 
@@ -39,12 +42,30 @@ public class TurnstileValidationService {
                     .retrieve()
                     .body(SiteVerifyResponse.class);
         } catch (RestClientException exception) {
+            log.error("Error communicating with Cloudflare Turnstile API: {}", exception.getMessage(), exception);
             throw new TurnstileUnavailableException(exception);
         }
 
-        if (result == null || !result.success()
-                || !actionAllowed(result.action())
-                || !hostnameAllowed(result.hostname())) {
+        if (result == null) {
+            log.warn("Turnstile validation failed: response from Cloudflare was null");
+            throw new InvalidTurnstileException();
+        }
+
+        if (!result.success()) {
+            log.warn("Turnstile validation failed by Cloudflare. success=false, errorCodes={}, hostname={}, action={}",
+                    result.errorCodes(), result.hostname(), result.action());
+            throw new InvalidTurnstileException();
+        }
+
+        if (!actionAllowed(result.action())) {
+            log.warn("Turnstile validation failed: action mismatch. Expected '{}', got '{}'",
+                    properties.getExpectedAction(), result.action());
+            throw new InvalidTurnstileException();
+        }
+
+        if (!hostnameAllowed(result.hostname())) {
+            log.warn("Turnstile validation failed: hostname mismatch. Allowed={}, got '{}'",
+                    properties.getAllowedHostnames(), result.hostname());
             throw new InvalidTurnstileException();
         }
     }
