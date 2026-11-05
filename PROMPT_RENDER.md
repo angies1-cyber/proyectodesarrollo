@@ -18,6 +18,7 @@ Antes de crear el Blueprint:
    openssl pkey -in private.pem -pubout -out public.pem
 2. Convierte cada archivo PEM completo a Base64 de una sola linea. No publiques ni guardes la clave privada en Git.
 3. El repositorio ya no incluye las claves anteriores. Consideralas comprometidas y no las reutilices.
+4. En Cloudflare, crea un widget Turnstile de tipo Managed para el hostname HTTPS final del frontend. Guarda la site key y la secret key solo en Render; no uses las claves de prueba en produccion.
 
 Crea un Blueprint desde render.yaml. Render solicitara las variables marcadas con sync: false. Usa estos valores:
 
@@ -29,6 +30,8 @@ Servicio clinica-auth:
 - INITIAL_ADMIN_USERNAME: nombre del administrador inicial
 - INITIAL_ADMIN_EMAIL: correo del administrador inicial
 - INITIAL_ADMIN_PASSWORD: contrasena robusta y unica
+- TURNSTILE_SECRET_KEY: secret key real del widget Turnstile (secreto; nunca va al frontend)
+- TURNSTILE_HOSTNAMES: hostname exacto del frontend sin protocolo, por ejemplo clinica-frontend.onrender.com
 
 Servicio clinica-api:
 - CORS_ALLOWED_ORIGINS: URL HTTPS final del frontend
@@ -37,6 +40,7 @@ Servicio clinica-api:
 Sitio clinica-frontend:
 - AUTH_API_BASE_URL: URL HTTPS final de clinica-auth, normalmente https://clinica-auth.onrender.com
 - CLINIC_API_BASE_URL: URL HTTPS final de clinica-api, normalmente https://clinica-api.onrender.com
+- TURNSTILE_SITE_KEY: site key publica del mismo widget Turnstile
 
 Si Render agrega sufijos a los nombres, actualiza las variables con las URLs reales y vuelve a desplegar los tres servicios. No uses localhost en ninguna variable de produccion.
 
@@ -49,6 +53,7 @@ Verificaciones obligatorias:
 6. Prueba crear una especialidad, un medico, un paciente y una cita.
 7. Revisa que Swagger no este disponible con el perfil prod.
 8. No muestres secretos en capturas, logs ni respuestas.
+9. Confirma que el boton de login permanece deshabilitado hasta completar Turnstile, que cada intento solicita una nueva verificacion y que una respuesta invalida obtiene el error generico TURNSTILE_INVALID.
 
 Si un despliegue falla, analiza primero el log exacto de Render y propone el cambio minimo. No cambies PostgreSQL por otro motor, no vuelvas a agregar claves al repositorio y no reemplaces Flyway por ddl-auto=update.
 ```

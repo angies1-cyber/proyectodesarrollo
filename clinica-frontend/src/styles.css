@@ -17,9 +17,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .login-field label { display: block; margin-bottom: 7px; color: #344c5e; font-size: .9rem; font-weight: 700; }
 .login-field input { width: 100%; min-height: 46px; padding: 10px 13px; border: 1px solid #cad5dc; border-radius: 9px; color: #203644; background: #fff; transition: border-color .2s, box-shadow .2s; }
 .login-field input:focus { border-color: #607e96; box-shadow: 0 0 0 3px rgba(96,126,150,.12); outline: 0; }
+.turnstile-field { margin: 2px 0 16px; }
+.turnstile-label { display: block; margin-bottom: 8px; color: #344c5e; font-size: .9rem; font-weight: 700; }
+.turnstile-shell { min-height: 65px; max-width: 100%; overflow-x: auto; }
+.turnstile-status { min-height: 18px; margin: 7px 0 0; color: #687b89; font-size: .78rem; line-height: 1.35; }
+.turnstile-status.turnstile-error { color: #984b5e; font-weight: 650; }
 .login-submit { width: 100%; min-height: 48px; margin-top: 4px; border: 0; border-radius: 9px; color: #fff; background: #506b85; font-weight: 800; cursor: pointer; transition: transform .2s, background .2s; }
 .login-submit:hover:not(:disabled) { background: #3d596f; transform: translateY(-1px); }
-.login-submit:disabled { opacity: .65; cursor: wait; }
+.login-submit:disabled { opacity: .65; cursor: not-allowed; }
 .login-demo { display: grid; gap: 4px; margin-top: 24px; padding-top: 18px; border-top: 1px solid #dfe6ea; color: #70818d; font-size: .78rem; }
 .login-demo strong { color: #425a6c; }
 

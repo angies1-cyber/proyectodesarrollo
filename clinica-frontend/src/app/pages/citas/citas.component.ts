@@ -30,12 +30,14 @@ import Swal from 'sweetalert2';
           <div class="form-row">
             <div class="form-group">
               <label>Paciente *</label>
+              <input type="search" [ngModel]="busquedaPaciente" (ngModelChange)="onBusquedaPacienteChange($event)" name="busquedaPaciente" placeholder="Buscar por nombre, apellido, DPI o teléfono" autocomplete="off">
               <select [(ngModel)]="nuevaCita.pacienteId" name="pacienteId" required>
                 <option [ngValue]="null" disabled selected>Selecciona un paciente</option>
-                <option *ngFor="let p of listaPacientes" [ngValue]="p.id">
+                <option *ngFor="let p of pacientesFiltrados" [ngValue]="p.id">
                   {{ p.nombre }} {{ p.apellido }} (DPI: {{ p.dpi }})
                 </option>
               </select>
+              <small class="no-results" *ngIf="busquedaPaciente.trim() && pacientesFiltrados.length === 0">No se encontraron pacientes.</small>
             </div>
             <div class="form-group">
               <label>Médico Especialista *</label>
@@ -201,6 +203,7 @@ import Swal from 'sweetalert2';
     .form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 0.3rem; }
     .form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
     .form-group input, .form-group select { padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; }
+    .no-results { color: #984b5e; font-size: 0.8rem; }
 
     .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
 
@@ -248,6 +251,7 @@ export class CitasComponent implements OnInit {
   currentPage = 0;
   pageSize = 50;
   showForm = false;
+  busquedaPaciente = '';
 
   filtros: any = {
     pacienteId: null,
@@ -273,12 +277,29 @@ export class CitasComponent implements OnInit {
 
   can(permission: string): boolean { return this.authService.hasPermission('CITAS', permission); }
 
+  get pacientesFiltrados(): Paciente[] {
+    const termino = this.normalizar(this.busquedaPaciente.trim());
+    if (!termino) return this.listaPacientes;
+    return this.listaPacientes.filter(paciente =>
+      [paciente.nombre, paciente.apellido, paciente.dpi, paciente.telefono]
+        .some(valor => this.normalizar(valor).includes(termino))
+    );
+  }
+
+  onBusquedaPacienteChange(valor: string): void {
+    this.busquedaPaciente = valor;
+    if (this.nuevaCita.pacienteId && !this.pacientesFiltrados.some(p => p.id === this.nuevaCita.pacienteId)) {
+      this.nuevaCita.pacienteId = null;
+    }
+  }
+
   ngOnInit(): void {
     this.cargarSelects();
     this.cargarCitas();
   }
 
   toggleForm(): void {
+    if (this.showForm) this.busquedaPaciente = '';
     this.showForm = !this.showForm;
   }
 
@@ -337,6 +358,7 @@ export class CitasComponent implements OnInit {
         });
         this.cargarCitas();
         this.showForm = false;
+        this.busquedaPaciente = '';
         this.nuevaCita = { pacienteId: null, medicoId: null, fecha: '', hora: '', motivo: '' };
       },
       error: (err) => {
@@ -411,5 +433,9 @@ export class CitasComponent implements OnInit {
         });
       }
     });
+  }
+
+  private normalizar(valor: string): string {
+    return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
 }

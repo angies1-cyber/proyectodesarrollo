@@ -18,6 +18,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -82,5 +83,23 @@ class AdminUsuarioServiceTest {
 
         assertEquals(400, exception.getStatusCode().value());
         verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void resetPasswordLimpiaBloqueo() {
+        Usuario usuario = Usuario.builder()
+                .id(8L)
+                .username("ana")
+                .failedLoginAttempts(5)
+                .lockedUntil(java.time.Instant.parse("2026-11-05T12:15:00Z"))
+                .build();
+        when(usuarioRepository.findById(8L)).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.encode("new-secret")).thenReturn("new-encoded");
+
+        service.resetPassword(8L, "new-secret");
+
+        assertEquals(0, usuario.getFailedLoginAttempts());
+        assertNull(usuario.getLockedUntil());
+        assertEquals("new-encoded", usuario.getPassword());
     }
 }

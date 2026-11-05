@@ -44,6 +44,10 @@ services:
         sync: false
       - key: INITIAL_ADMIN_PASSWORD
         sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      - key: TURNSTILE_HOSTNAMES
+        sync: false
 
   - type: web
     name: clinica-api
@@ -91,6 +95,8 @@ services:
       - key: AUTH_API_BASE_URL
         sync: false
       - key: CLINIC_API_BASE_URL
+        sync: false
+      - key: TURNSTILE_SITE_KEY
         sync: false
     routes:
       - type: rewrite

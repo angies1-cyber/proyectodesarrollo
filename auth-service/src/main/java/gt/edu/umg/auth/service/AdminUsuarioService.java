@@ -77,6 +77,9 @@ public class AdminUsuarioService {
         }
         validarUltimoSuperAdmin(usuario, !enabled);
         usuario.setEnabled(enabled);
+        if (enabled) {
+            clearFailures(usuario);
+        }
         return toResponse(usuario);
     }
 
@@ -84,6 +87,7 @@ public class AdminUsuarioService {
     public void resetPassword(Long id, String newPassword) {
         Usuario usuario = getUsuario(id);
         usuario.setPassword(passwordEncoder.encode(newPassword));
+        clearFailures(usuario);
     }
 
     @Transactional
@@ -120,6 +124,11 @@ public class AdminUsuarioService {
 
     private boolean tieneRol(Usuario usuario, String nombre) {
         return usuario.getRoles().stream().anyMatch(r -> nombre.equals(r.getNombre()));
+    }
+
+    private void clearFailures(Usuario usuario) {
+        usuario.setFailedLoginAttempts(0);
+        usuario.setLockedUntil(null);
     }
 
     private Usuario getUsuario(Long id) {

@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.time.Instant;
 
 @Entity
 @Table(name = "usuarios")
@@ -31,6 +32,13 @@ public class Usuario {
     @Column(nullable = false)
     @Builder.Default
     private Boolean enabled = true;
+
+    @Column(name = "failed_login_attempts", nullable = false)
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

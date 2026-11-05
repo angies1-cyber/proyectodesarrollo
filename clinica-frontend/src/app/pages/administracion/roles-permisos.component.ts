@@ -27,10 +27,13 @@ import { GuardarRolRequest, RolAdminService } from '../../core/services/rol-admi
           <div class="admin-form-grid">
             <label>Nombre<input name="nombre" [(ngModel)]="draft.nombre" required [disabled]="isSuperRole()"></label>
             <label>Descripción<input name="descripcion" [(ngModel)]="draft.descripcion"></label>
-            <label>Sistema<select name="sistema" [(ngModel)]="draft.sistemaId" required><option *ngFor="let sistema of catalogo.sistemas" [ngValue]="sistema.id">{{ sistema.nombre }}</option></select></label>
+            <label>Sistema<select name="sistema" [ngModel]="draft.sistemaId" (ngModelChange)="cambiarSistema($event)" required><option *ngFor="let sistema of catalogo.sistemas" [ngValue]="sistema.id">{{ sistema.nombre }}</option></select></label>
             <label class="check-label"><input type="checkbox" name="activo" [(ngModel)]="draft.activo"> Rol activo</label>
           </div>
-          <div class="permission-matrix">
+          <div class="permission-matrix" [style.--permission-count]="catalogo.permisos.length">
+            <div class="permission-row permission-header" aria-hidden="true">
+              <span>Módulo</span><span *ngFor="let permiso of catalogo.permisos">{{ permiso.nombre }}</span>
+            </div>
             <div class="permission-row" *ngFor="let modulo of modulosDelSistema()">
               <label class="module-check"><input type="checkbox" [checked]="hasModule(modulo.id)" (change)="toggleModule(modulo.id, $any($event.target).checked)"><strong>{{ modulo.nombre }}</strong><small>{{ modulo.codigo }}</small></label>
               <label *ngFor="let permiso of catalogo.permisos"><input type="checkbox" [disabled]="!hasModule(modulo.id)" [checked]="hasPermission(modulo.id, permiso.id)" (change)="togglePermission(modulo.id, permiso.id, $any($event.target).checked)">{{ permiso.nombre }}</label>
@@ -47,7 +50,7 @@ import { GuardarRolRequest, RolAdminService } from '../../core/services/rol-admi
     </section>
   `,
   styles: [`
-    .roles-layout{display:grid;grid-template-columns:240px 1fr;gap:1rem}.roles-list,.role-editor{background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 28px #29344912}.roles-list{display:flex;flex-direction:column;gap:.45rem;align-self:start}.roles-list button{border:1px solid #eadde1;background:#fff;border-radius:9px;padding:.75rem;text-align:left;display:flex;flex-direction:column;cursor:pointer}.roles-list button.active{border-color:#a64d68;background:#fff5f7}.roles-list small,.module-check small{color:#77808e}.permission-matrix{margin-top:1rem;border:1px solid #eadde1;border-radius:10px;overflow:auto}.permission-row{display:grid;grid-template-columns:minmax(190px,1.4fr) repeat(5,minmax(105px,1fr));gap:.5rem;align-items:center;padding:.75rem;border-bottom:1px solid #f0e7ea}.permission-row:last-child{border-bottom:0}.permission-row label{display:flex;gap:.35rem;align-items:center;font-size:.82rem}.module-check{flex-direction:column!important;align-items:flex-start!important}.check-label{display:flex;align-items:center;gap:.5rem}.delete-role{border:0;border-radius:8px;background:#b4233d;color:#fff;padding:.7rem 1rem}@media(max-width:900px){.roles-layout{grid-template-columns:1fr}.permission-row{min-width:780px}}
+    .roles-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:1rem;min-width:0}.roles-list,.role-editor{min-width:0;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 28px #29344912}.roles-list{display:flex;flex-direction:column;gap:.45rem;align-self:start;max-height:calc(100vh - 180px);overflow-y:auto}.roles-list button{border:1px solid #eadde1;background:#fff;border-radius:9px;padding:.75rem;text-align:left;display:flex;flex-direction:column;cursor:pointer}.roles-list button.active{border-color:#a64d68;background:#fff5f7}.roles-list small,.module-check small{color:#77808e}.role-editor .admin-form-grid{margin-top:0}.role-editor .admin-form-grid>label{display:grid;gap:.4rem;color:#42596a;font-size:.86rem;font-weight:700}.role-editor input:not([type=checkbox]),.role-editor select{width:100%;min-width:0;min-height:42px;padding:8px 11px;border:1px solid #cad6dd;border-radius:8px;color:#2d4353;background:#fff}.permission-matrix{margin-top:1rem;border:1px solid #eadde1;border-radius:10px;overflow:auto}.permission-row{display:grid;grid-template-columns:minmax(180px,1.35fr) repeat(var(--permission-count),minmax(105px,1fr));gap:.5rem;align-items:center;min-width:max-content;padding:.75rem;border-bottom:1px solid #f0e7ea}.permission-row:last-child{border-bottom:0}.permission-row label{display:flex;gap:.35rem;align-items:center;font-size:.82rem}.permission-header{position:sticky;top:0;z-index:2;color:#637482;background:#f8fafb;font-size:.7rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.permission-header span:not(:first-child){text-align:center}.module-check{position:sticky;left:0;z-index:1;flex-direction:column!important;align-items:flex-start!important;background:#fff}.check-label{display:flex!important;grid-auto-flow:column;justify-content:start;align-items:center;align-self:end;min-height:42px}.admin-form-actions{gap:.65rem;flex-wrap:wrap}.delete-role{border:0;border-radius:8px;background:#b4233d;color:#fff;padding:.7rem 1rem;cursor:pointer}@media(min-width:1024px) and (max-width:1920px){.roles-layout{grid-template-columns:clamp(190px,18vw,240px) minmax(0,1fr)}.role-editor{padding:clamp(1rem,2vw,1.5rem)}}@media(max-width:900px){.roles-layout{grid-template-columns:1fr}.roles-list{max-height:none}.permission-row{min-width:780px}.permission-header{display:none}}
   `]
 })
 export class RolesPermisosComponent implements OnInit {
@@ -70,13 +73,37 @@ export class RolesPermisosComponent implements OnInit {
   nuevoRol(): void {
     this.draft = { id: 0, nombre: 'ROLE_', descripcion: '', activo: true, sistemaId: this.catalogo.sistemas[0]?.id, sistemaNombre: '', modulos: [] };
   }
+  cambiarSistema(sistemaId: number): void {
+    if (!this.draft) return;
+    this.draft.sistemaId = sistemaId;
+    const moduleIds = new Set(this.catalogo.modulos.filter(m => m.sistemaId === sistemaId).map(m => m.id));
+    this.draft.modulos = this.draft.modulos.filter(m => moduleIds.has(m.moduloId));
+  }
   modulosDelSistema() { return this.catalogo.modulos.filter(m => m.sistemaId === this.draft?.sistemaId); }
   hasModule(id: number): boolean { return !!this.draft?.modulos.some(m => m.moduloId === id); }
   hasPermission(moduloId: number, permisoId: number): boolean { return !!this.draft?.modulos.find(m => m.moduloId === moduloId)?.permisoIds.includes(permisoId); }
   toggleModule(id: number, enabled: boolean): void {
     if (!this.draft) return;
-    if (enabled) this.draft.modulos.push({ moduloId: id, permisoIds: [] });
-    else this.draft.modulos = this.draft.modulos.filter(m => m.moduloId !== id);
+    if (enabled) {
+      let modulo = this.catalogo.modulos.find(m => m.id === id);
+      while (modulo) {
+        if (!this.hasModule(modulo.id)) this.draft.modulos.push({ moduloId: modulo.id, permisoIds: [] });
+        modulo = modulo.moduloPadreId == null ? undefined : this.catalogo.modulos.find(m => m.id === modulo!.moduloPadreId);
+      }
+      return;
+    }
+    const idsToRemove = new Set<number>([id]);
+    let foundChildren = true;
+    while (foundChildren) {
+      foundChildren = false;
+      this.catalogo.modulos.forEach(modulo => {
+        if (modulo.moduloPadreId != null && idsToRemove.has(modulo.moduloPadreId) && !idsToRemove.has(modulo.id)) {
+          idsToRemove.add(modulo.id);
+          foundChildren = true;
+        }
+      });
+    }
+    this.draft.modulos = this.draft.modulos.filter(m => !idsToRemove.has(m.moduloId));
   }
   togglePermission(moduloId: number, permisoId: number, enabled: boolean): void {
     const item = this.draft?.modulos.find(m => m.moduloId === moduloId); if (!item) return;

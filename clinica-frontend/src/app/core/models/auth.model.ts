@@ -20,7 +20,8 @@ export interface ModuloAcceso {
 
 export interface AuthRequest {
   username: string;
-  password?: string;
+  password: string;
+  turnstileToken: string;
 }
 
 export interface AuthResponse {
